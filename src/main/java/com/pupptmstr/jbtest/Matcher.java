@@ -1,9 +1,6 @@
 package com.pupptmstr.jbtest;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.regex.Pattern;
 
 public class Matcher {
@@ -16,9 +13,8 @@ public class Matcher {
 
     public boolean matches(String text, String regex, int maxMillisToWork) {
         try {
-            CompletableFuture<Boolean> matcherTask =
-                    CompletableFuture.supplyAsync(() -> Pattern.compile(regex).matcher(text).matches());
-            return matcherTask.get(maxMillisToWork, TimeUnit.MILLISECONDS);
+            ExecutorService s = ForkJoinPool.commonPool();
+            return  s.submit(() -> Pattern.compile(regex).matcher(text).matches()).get(maxMillisToWork, TimeUnit.MILLISECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             e.printStackTrace();
             return false;
